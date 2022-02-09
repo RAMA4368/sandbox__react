@@ -1,6 +1,6 @@
 import React from "react";
 
-function CreateUser({ username, age, email, onChange, onCreate }) {
+function CreateUser({ username, age, email, onChange, onCreate, onRemove }) {
   return (
     <div>
       <input
@@ -16,7 +16,9 @@ function CreateUser({ username, age, email, onChange, onCreate }) {
         value={email}
       />
       <input name="age" placeholder="나이" onChange={onChange} value={age} />
-      <button onClick={onCreate}>등록</button>
+      <button onClick={onCreate} onRemove={onRemove}>
+        등록
+      </button>
     </div>
   );
 }

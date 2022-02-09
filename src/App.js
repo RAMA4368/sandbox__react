@@ -3,6 +3,11 @@ import CreateUser from "./CreateUser";
 import InputSample from "./InputSample";
 import UserList from "./UserList";
 
+function countActiveUsers(users) {
+  console.log("활성 사용자 수를 세는중...");
+  return users.filter((user) => user.active).length;
+}
+
 function App() {
   const [inputs, setInputs] = useState({
     username: "",
@@ -23,19 +28,22 @@ function App() {
       id: 1,
       username: "sue1",
       email: "sue@naver.com",
-      age: "24"
+      age: "24",
+      active: true
     },
     {
       id: 2,
       username: "sue2",
       email: "sue@naver.com",
-      age: "27"
+      age: "27",
+      active: true
     },
     {
       id: 3,
       username: "sue3",
       email: "sue@naver.com",
-      age: "30"
+      age: "30",
+      active: false
     }
   ]);
 
@@ -48,7 +56,8 @@ function App() {
       email,
       age
     };
-    setUsers([...users, user]); //users를 복사하고 user를 붙인다
+    //setUsers([...users, user]); //users를 복사하고 user를 붙인다
+    setUsers(users.concat(user));
     setInputs({
       username: "",
       email: "",
@@ -58,6 +67,20 @@ function App() {
     nextId.current += 1;
   };
 
+  const onRemove = (id) => {
+    // true 인 배열만 생성해준다. ex)3파라미터를 넘김 => 1!==3 true 이므로 배열에 추가
+    setUsers(users.filter((user) => user.id !== id));
+  };
+
+  const onToggle = (id) => {
+    //클릭한 리스트 active의 반대 상태로
+    setUsers(
+      users.map((user) =>
+        user.id === id ? { ...user, active: !user.active } : user
+      )
+    );
+  };
+  const count = countActiveUsers(users);
   return (
     <>
       <CreateUser
@@ -67,7 +90,8 @@ function App() {
         onCreate={onCreate}
         age={age}
       />
-      <UserList users={users} />
+      <UserList users={users} onRemove={onRemove} onToggle={onToggle} />
+      <div>활성 사용자 수 : {count}</div>
     </>
   );
 }

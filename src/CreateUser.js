@@ -16,10 +16,8 @@ function CreateUser({ username, age, email, onChange, onCreate, onRemove }) {
         value={email}
       />
       <input name="age" placeholder="나이" onChange={onChange} value={age} />
-      <button onClick={onCreate} onRemove={onRemove}>
-        등록
-      </button>
+      <button onClick={onCreate}>등록</button>
     </div>
   );
 }
-export default CreateUser;
+export default React.memo(CreateUser);

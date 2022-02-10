@@ -1,10 +1,11 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useMemo, useCallback } from "react";
 import CreateUser from "./CreateUser";
 import InputSample from "./InputSample";
 import UserList from "./UserList";
 
 function countActiveUsers(users) {
   console.log("활성 사용자 수를 세는중...");
+  //users.active 가 true 인 것들만 가져오겠다
   return users.filter((user) => user.active).length;
 }
 
@@ -14,14 +15,18 @@ function App() {
     email: "",
     age: ""
   });
+  //useCallback이 있다면 inputs가 바뀔때만 함수가 새로 만들어진다
   const { username, email, age } = inputs;
-  const onChange = (e) => {
-    const { name, value } = e.target;
-    setInputs({
-      ...inputs,
-      [name]: value
-    });
-  };
+  const onChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      setInputs({
+        ...inputs,
+        [name]: value
+      });
+    },
+    [inputs]
+  );
 
   const [users, setUsers] = useState([
     {
@@ -49,7 +54,7 @@ function App() {
 
   const nextId = useRef(4);
 
-  const onCreate = () => {
+  const onCreate = useCallback(() => {
     const user = {
       id: nextId.current,
       username,
@@ -57,7 +62,7 @@ function App() {
       age
     };
     //setUsers([...users, user]); //users를 복사하고 user를 붙인다
-    setUsers(users.concat(user));
+    setUsers((users) => users.concat(user));
     setInputs({
       username: "",
       email: "",
@@ -65,22 +70,22 @@ function App() {
     });
     console.log(nextId.current);
     nextId.current += 1;
-  };
+  }, []);
 
-  const onRemove = (id) => {
+  const onRemove = useCallback((id) => {
     // true 인 배열만 생성해준다. ex)3파라미터를 넘김 => 1!==3 true 이므로 배열에 추가
-    setUsers(users.filter((user) => user.id !== id));
-  };
+    setUsers((users) => users.filter((user) => user.id !== id));
+  }, []);
 
-  const onToggle = (id) => {
+  const onToggle = useCallback((id) => {
     //클릭한 리스트 active의 반대 상태로
-    setUsers(
+    setUsers((users) =>
       users.map((user) =>
         user.id === id ? { ...user, active: !user.active } : user
       )
     );
-  };
-  const count = countActiveUsers(users);
+  }, []);
+  const count = useMemo(() => countActiveUsers(users), [users]);
   return (
     <>
       <CreateUser

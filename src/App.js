@@ -3,23 +3,21 @@ import React, {
   useReducer,
   useState,
   useMemo,
-  useCallback
+  useCallback,
+  createContext
 } from "react";
 import CreateUser from "./CreateUser";
+import useInput from "./useInputs";
 import UserList from "./UserList";
 
 function countActiveUsers(users) {
   console.log("활성 사용자 수를 세는중...");
   //users.active 가 true 인 것들만 가져오겠다
+
   return users.filter((user) => user.active).length;
 }
 // 변수 생성 > inputs 라는 객체 (input 박스 reset용 )
 const initialState = {
-  inputs: {
-    username: "",
-    email: "",
-    age: ""
-  },
   users: [
     {
       id: 1,
@@ -48,14 +46,6 @@ const initialState = {
 function reducer(state, action) {
   console.log(action);
   switch (action.type) {
-    case "CHANGE_INPUT":
-      return {
-        ...state,
-        inputs: {
-          ...state.inputs,
-          [action.name]: action.value
-        }
-      };
     case "CREATE_USER":
       return {
         inputs: initialState.inputs, //원래 있던 목록 표출
@@ -77,21 +67,18 @@ function reducer(state, action) {
       throw new Error("Unhandled action");
   }
 }
+export const UserDispatch = createContext(null);
 
 function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [form, onChange, reset] = useInput({
+    username: "",
+    email: "",
+    age: ""
+  });
+  const { username, email, age } = form;
   const nextId = useRef(4);
   const { users } = state;
-  const { username, email, age } = state.inputs;
-
-  const onChange = useCallback((e) => {
-    const { name, value } = e.target;
-    dispatch({
-      type: "CHANGE_INPUT",
-      name,
-      value
-    });
-  }, []);
 
   const onCreate = useCallback(() => {
     dispatch({
@@ -104,24 +91,13 @@ function App() {
       }
     });
     nextId.current += 1;
-  }, [username, email, age]);
+    reset();
+  }, [username, email, age, reset]);
 
-  const onToggle = useCallback((id) => {
-    dispatch({
-      type: "TOGGLE_USER",
-      id
-    });
-  }, []);
-  const onRemove = useCallback((id) => {
-    dispatch({
-      type: "REMOVE_USER",
-      id
-    });
-  }, []);
   const count = useMemo(() => countActiveUsers(users), [users]);
 
   return (
-    <>
+    <UserDispatch.Provider value={dispatch}>
       <CreateUser
         username={username}
         email={email}
@@ -129,9 +105,9 @@ function App() {
         onChange={onChange}
         onCreate={onCreate}
       />
-      <UserList users={users} onToggle={onToggle} onRemove={onRemove} />
+      <UserList users={users} />
       <div>활성 사용자 수 : {count}</div>
-    </>
+    </UserDispatch.Provider>
   );
 }
 export default App;
